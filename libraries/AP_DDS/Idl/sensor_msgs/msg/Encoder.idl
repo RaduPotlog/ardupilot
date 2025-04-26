@@ -1,0 +1,41 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from ardupilot_msgs/msg/Encoder.msg
+// generated code does not contain a copyright notice
+
+#include "std_msgs/msg/Header.idl"
+
+module ardupilot_msgs {
+  module msg {
+    struct Encoder {
+      std_msgs::msg::Header header;
+
+      @verbatim (language="comment", text=
+        "the instance number of this WheelEncoder")
+      uint8 instance;
+
+      @verbatim (language="comment", text=
+        "cumulative number of forward + backwards events received from wheel encoder")
+      int32 distance_count;
+
+      @verbatim (language="comment", text=
+        "total number of successful readings from sensor (used for sensor quality calcs)")
+      uint32 total_count;
+
+      @verbatim (language="comment", text=
+        "total number of errors reading from sensor (used for sensor quality calcs)")
+      uint32 error_count;
+
+      @verbatim (language="comment", text=
+        "time of last reading")
+      uint32 last_reading_ms;
+
+      @verbatim (language="comment", text=
+        "distance count change during the last update (used to calculating rate)")
+      int32 dist_count_change;
+
+      @verbatim (language="comment", text=
+        "time change (in milliseconds) for the previous period (used to calculating rate)")
+      uint32 dt_ms;
+    };
+  };
+};

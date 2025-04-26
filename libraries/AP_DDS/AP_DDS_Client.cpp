@@ -20,6 +20,8 @@
 #include <AP_Common/AP_FWVersion.h>
 #include <AP_ExternalControl/AP_ExternalControl_config.h>
 
+#include <AP_WheelEncoder/AP_WheelEncoder.h>
+
 #if AP_DDS_ARM_SERVER_ENABLED
 #include "ardupilot_msgs/srv/ArmMotors.h"
 #endif // AP_DDS_ARM_SERVER_ENABLED
@@ -81,6 +83,9 @@ static constexpr uint16_t DELAY_PING_MS = 500;
 #if AP_DDS_STATUS_PUB_ENABLED
 static constexpr uint16_t DELAY_STATUS_TOPIC_MS = AP_DDS_DELAY_STATUS_TOPIC_MS;
 #endif // AP_DDS_STATUS_PUB_ENABLED
+#if AP_DDS_ENCODER_PUB_ENABLED
+static constexpr uint16_t DELAY_ENCODER_TOPIC_MS = AP_DDS_DELAY_ENCODER_TOPIC_MS;
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 
 // Define the subscriber data members, which are static class scope.
 // If these are created on the stack in the subscriber,
@@ -717,6 +722,37 @@ bool AP_DDS_Client::update_topic(ardupilot_msgs_msg_Status& msg)
     }
 }
 #endif // AP_DDS_STATUS_PUB_ENABLED
+
+#if AP_DDS_ENCODER_PUB_ENABLED
+bool AP_DDS_Client::update_topic(ardupilot_msgs_msg_Encoder& msg, uint8_t const instance)
+{
+    const auto &encoder = AP::wheelencoder();
+
+    if (nullptr == encoder) {
+        return false;
+    }
+    
+    // Update header
+    update_topic(msg.header.stamp);
+    
+    if(true == encoder->enabled(instance)) {
+        msg.instance          = instance;
+        msg.distance_count    = encoder->get_distance_count(instance);
+        msg.total_count       = encoder->get_total_count(instance);
+        msg.error_count       = encoder->get_error_count(instance);
+        msg.last_reading_ms   = encoder->get_last_reading_ms(instance);
+        msg.dist_count_change = encoder->get_dist_count_change(instance);
+        msg.dt_ms             = encoder->get_dt_ms(instance);
+    }
+    else {
+        return false;
+    }
+
+    return true;
+}
+
+#endif // AP_DDS_ENCODER_PUB_ENABLED
+
 /*
   start the DDS thread
  */
@@ -776,8 +812,8 @@ void AP_DDS_Client::on_topic(uxrSession* uxr_session, uxrObjectId object_id, uin
                     RC_Channels::set_override(i, 0U, t_now);
                 } else {
                     const uint16_t mapped_data = static_cast<uint16_t>(
-                                                     linear_interpolate(rc().channel(i)->get_radio_min(),
-                                                             rc().channel(i)->get_radio_max(),
+                                                     linear_interpolate(1000,
+                                                             2000,
                                                              rx_joy_topic.axes[i],
                                                              -1.0, 1.0));
                     RC_Channels::set_override(i, mapped_data, t_now);
@@ -1667,6 +1703,23 @@ void AP_DDS_Client::write_status_topic()
 }
 #endif // AP_DDS_STATUS_PUB_ENABLED
 
+#if AP_DDS_ENCODER_PUB_ENABLED
+void AP_DDS_Client::write_encoder_topic()
+{
+    WITH_SEMAPHORE(csem);
+    if (connected) {
+        ucdrBuffer ub {};
+        const uint32_t topic_size = ardupilot_msgs_msg_Encoder_size_of_topic(&encoder_topic, 0);
+        uxr_prepare_output_stream(&session, reliable_out, topics[to_underlying(TopicIndex::ENCODER_PUB)].dw_id, &ub, topic_size);
+        const bool success = ardupilot_msgs_msg_Encoder_serialize_topic(&ub, &encoder_topic);
+        if (!success) {
+            // TODO sometimes serialization fails on bootup. Determine why.
+            // AP_HAL::panic("FATAL: DDS_Client failed to serialize");
+        }
+    }
+}
+#endif // AP_DDS_ENCODER_PUB_ENABLED
+
 void AP_DDS_Client::update()
 {
     WITH_SEMAPHORE(csem);
@@ -1763,6 +1816,17 @@ void AP_DDS_Client::update()
         last_status_check_time_ms = cur_time_ms;
     }
 #endif // AP_DDS_STATUS_PUB_ENABLED
+
+#if AP_DDS_ENCODER_PUB_ENABLED
+    if (cur_time_ms - last_encoder_check_time_ms > DELAY_ENCODER_TOPIC_MS) {
+        for (uint8_t encoder_instance = 0U; encoder_instance < 2U; encoder_instance++) {
+			if (update_topic(encoder_topic, encoder_instance)) {
+				write_encoder_topic();
+			}
+		}
+		last_encoder_check_time_ms = cur_time_ms;
+    }
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 
     status_ok = uxr_run_session_time(&session, 1);
 }

@@ -29,6 +29,9 @@
 #if AP_DDS_STATUS_PUB_ENABLED
 #include "ardupilot_msgs/msg/Status.h"
 #endif // AP_DDS_STATUS_PUB_ENABLED
+#if AP_DDS_ENCODER_PUB_ENABLED
+#include "sensor_msgs/msg/Encoder.h"
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 #if AP_DDS_JOY_SUB_ENABLED
 #include "sensor_msgs/msg/Joy.h"
 #endif // AP_DDS_JOY_SUB_ENABLED
@@ -207,6 +210,17 @@ private:
     //! @brief Serialize the current status and publish to the IO stream(s)
     void write_status_topic();
 #endif // AP_DDS_STATUS_PUB_ENABLED
+
+#if AP_DDS_ENCODER_PUB_ENABLED
+    ardupilot_msgs_msg_Encoder encoder_topic;
+    bool update_topic(ardupilot_msgs_msg_Encoder& msg, const uint8_t instance);
+    // The last ms timestamp AP_DDS wrote/checked an encoder message
+    uint64_t last_encoder_check_time_ms;
+    // last status values;
+    ardupilot_msgs_msg_Encoder last_encoder_msg_;
+    //! @brief Serialize the current encoder and publish to the IO stream(s)
+    void write_encoder_topic();
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 
 #if AP_DDS_STATIC_TF_PUB_ENABLED
     // outgoing transforms

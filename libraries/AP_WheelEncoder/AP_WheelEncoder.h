@@ -88,6 +88,15 @@ public:
     // return a 3D vector defining the position offset of the center of the wheel in meters relative to the body frame origin
     const Vector3f &get_pos_offset(uint8_t instance) const;
 
+    // return distance count
+    int32_t get_distance_count(uint8_t instance) const;
+
+    // return distance count change
+    int32_t get_dist_count_change(uint8_t instance) const;
+
+    // return dt in miliseconds
+    uint32_t get_dt_ms(uint8_t instance) const;
+
     // get total delta angle (in radians) measured by the wheel encoder
     float get_delta_angle(uint8_t instance) const;
 

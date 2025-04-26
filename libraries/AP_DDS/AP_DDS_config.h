@@ -98,6 +98,10 @@
 #define AP_DDS_DELAY_STATUS_TOPIC_MS 100
 #endif
 
+#ifndef AP_DDS_DELAY_ENCODER_TOPIC_MS
+#define AP_DDS_DELAY_ENCODER_TOPIC_MS 100
+#endif
+
 #ifndef AP_DDS_CLOCK_PUB_ENABLED
 #define AP_DDS_CLOCK_PUB_ENABLED 1
 #endif
@@ -153,6 +157,10 @@
 #define AP_DDS_ARM_CHECK_SERVER_ENABLED 1
 #endif
 
+#ifndef AP_DDS_ENCODER_PUB_ENABLED
+#define AP_DDS_ENCODER_PUB_ENABLED 1
+#endif
+
 // Whether to include Twist support
 #define AP_DDS_NEEDS_TWIST AP_DDS_VEL_CTRL_ENABLED || AP_DDS_LOCAL_VEL_PUB_ENABLED
 
@@ -168,5 +176,5 @@
 #endif
 
 #ifndef AP_DDS_PARTICIPANT_NAME
-#define AP_DDS_PARTICIPANT_NAME "ap"
+#define AP_DDS_PARTICIPANT_NAME "rovermikrolabca"
 #endif

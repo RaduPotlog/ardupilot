@@ -274,6 +274,39 @@ const Vector3f &AP_WheelEncoder::get_pos_offset(uint8_t instance) const
     return _pos_offset[instance];
 }
 
+// get distance count
+int32_t AP_WheelEncoder::get_distance_count(uint8_t instance) const
+{
+    // for invalid instances return zero
+    if (instance >= WHEELENCODER_MAX_INSTANCES) {
+        return 0.0f;
+    }
+    
+    return state[instance].distance_count;
+}
+
+// get distance count change
+int32_t AP_WheelEncoder::get_dist_count_change(uint8_t instance) const
+{
+    // for invalid instances return zero
+    if (instance >= WHEELENCODER_MAX_INSTANCES) {
+        return 0.0f;
+    }
+    
+    return state[instance].dist_count_change;
+}
+
+// get dt in miliseconds
+uint32_t AP_WheelEncoder::get_dt_ms(uint8_t instance) const
+{
+    // for invalid instances return zero
+    if (instance >= WHEELENCODER_MAX_INSTANCES) {
+        return 0.0f;
+    }
+    
+    return state[instance].dt_ms;
+}
+
 // get total delta angle (in radians) measured by the wheel encoder
 float AP_WheelEncoder::get_delta_angle(uint8_t instance) const
 {

@@ -2,6 +2,7 @@
 #include "sensor_msgs/msg/NavSatFix.h"
 #include "tf2_msgs/msg/TFMessage.h"
 #include "sensor_msgs/msg/BatteryState.h"
+#include "sensor_msgs/msg/Encoder.h"
 #include "geographic_msgs/msg/GeoPoseStamped.h"
 #include "geometry_msgs/msg/Vector3Stamped.h"
 #if AP_DDS_IMU_PUB_ENABLED
@@ -66,6 +67,9 @@ enum class TopicIndex: uint8_t {
 #if AP_DDS_GLOBAL_POS_CTRL_ENABLED
     GLOBAL_POSITION_SUB,
 #endif // AP_DDS_GLOBAL_POS_CTRL_ENABLED
+#if AP_DDS_ENCODER_PUB_ENABLED
+    ENCODER_PUB,
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 };
 
 static inline constexpr uint8_t to_underlying(const TopicIndex index)
@@ -382,4 +386,22 @@ constexpr struct AP_DDS_Client::Topic_table AP_DDS_Client::topics[] = {
         },
     },
 #endif // AP_DDS_GLOBAL_POS_CTRL_ENABLED
+#if AP_DDS_ENCODER_PUB_ENABLED
+    {
+        .topic_id = to_underlying(TopicIndex::ENCODER_PUB),
+        .pub_id = to_underlying(TopicIndex::ENCODER_PUB),
+        .sub_id = to_underlying(TopicIndex::ENCODER_PUB),
+        .dw_id = uxrObjectId{.id=to_underlying(TopicIndex::ENCODER_PUB), .type=UXR_DATAWRITER_ID},
+        .dr_id = uxrObjectId{.id=to_underlying(TopicIndex::ENCODER_PUB), .type=UXR_DATAREADER_ID},
+        .topic_rw = Topic_rw::DataWriter,
+        .topic_name = "rt/ap/encoder",
+        .type_name = "ardupilot_msgs::msg::dds_::Encoder_",
+        .qos = {
+            .durability = UXR_DURABILITY_TRANSIENT_LOCAL,
+            .reliability = UXR_RELIABILITY_RELIABLE,
+            .history = UXR_HISTORY_KEEP_LAST,
+            .depth = 5,
+        },
+    },
+#endif // AP_DDS_ENCODER_PUB_ENABLED
 };
